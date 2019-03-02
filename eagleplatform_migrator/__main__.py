@@ -28,8 +28,8 @@ def main():
         with open(args['auth'], "r") as cred:
             credentials = json.load(cred)
     except AttributeError:
-        print(
-            "You have to provide valid sredentials file in form { 'address': 'example.com', 'account': 'myaccount', 'auth_token': 'secret' }")
+        cprint('error',
+               "You have to provide valid sredentials file in form { 'address': 'example.com', 'account': 'myaccount', 'auth_token': 'secret' }")
         sys.exit(1)
 
     site = credentials['address']
@@ -47,12 +47,17 @@ def main():
             cprint(
                 'error', f"Error occured on api request to filters: \n\t{e}")
 
-    if records_list.status_code != "200":
+    if records_list.status_code == 200:
         records = json.loads(records_list.text)
-        videolist = {'records': []}
-        for record in records['data']['records']:
-            videolist['records'].append(
-                {'eagle_id': record['id'], 'name': record['name']})
+        if records['status'] == "200":
+            videolist = {'records': []}
+            for record in records['data']['records']:
+                videolist['records'].append(
+                    {'eagle_id': record['id'], 'name': record['name']})
+        else:
+            cprint(
+                'error', F"Could not get records due to an error: \n\t{records['errors'][0]}")
+            sys.exit(2)
 
     count = 0
     for entry in reversed(videolist['records']):
