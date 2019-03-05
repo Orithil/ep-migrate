@@ -31,7 +31,7 @@ def main():
 
     records_list = get_videos(site, login, token, filter_id)
 
-    youtube = youtube_upload(records_list)
+    youtube = youtube_upload(records_list['records'])
     youtube_response = json.loads(youtube)
     cprint('warning', youtube_response['id'])
 

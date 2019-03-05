@@ -1,6 +1,6 @@
 import httplib2
 import time
-from eagleplatform_migrator import cprint
+from eagleplatform_migrator.helpers import cprint
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
@@ -42,18 +42,15 @@ def initialize_upload(youtube, options):
     if options.keywords:
         tags = options.keywords.split(',')
 
-    body = dict(
-        snippet=dict(
-            title=options.title,
-            description=options.description,
-            tags=tags,
-            categoryId=options.category
-        ),
-        status=dict(
-            privacyStatus=options.privacyStatus
-        )
-    )
-
+    body = { 'snippet': {
+        'title': options['title'],
+        'description': '',
+        'tags': '',
+        'categoryId': '22'},
+        'status': {
+            'pruvacyStatus': 'private'}
+        }
+    
     # Call the API's videos.insert method to create and upload the video.
     insert_request = youtube.videos().insert(
         part=','.join(body.keys()),
@@ -69,7 +66,7 @@ def initialize_upload(youtube, options):
         # practice, but if you're using Python older than 2.6 or if you're
         # running on App Engine, you should set the chunksize to something like
         # 1024 * 1024 (1 megabyte).
-        media_body=MediaFileUpload(options.file, chunksize=-1, resumable=True)
+        media_body=MediaFileUpload(options['filename'], chunksize=-1, resumable=True)
     )
 
     resumable_upload(insert_request)
@@ -92,13 +89,13 @@ def resumable_upload(request):
                         'success', f"Video id {response['id']} was successfully uploaded.")
                 else:
                     exit('The upload failed with an unexpected response: %s' % response)
-        except HttpError, e:
+        except HttpError as e:
             if e.resp.status in RETRIABLE_STATUS_CODES:
                 error = 'A retriable HTTP error %d occurred:\n%s' % (e.resp.status,
                                                                      e.content)
             else:
                 raise
-        except RETRIABLE_EXCEPTIONS, e:
+        except RETRIABLE_EXCEPTIONS as e:
             error = 'A retriable error occurred: %s' % e
 
         if error is not None:
@@ -113,7 +110,7 @@ def resumable_upload(request):
                 'info', f"Sleeping {sleep_seconds} seconds and then retrying...")
 
 
-time.sleep(sleep_seconds)
+        time.sleep(sleep_seconds)
 
 
 def youtube_upload(options):
@@ -121,6 +118,6 @@ def youtube_upload(options):
 
     try:
         initialize_upload(youtube, options)
-    except HttpError, e:
+    except HttpError as e:
         cprint(
             'error', f"An HTTP error %d occurred:\n\t{e.resp.status}\n\t{e.content}")
