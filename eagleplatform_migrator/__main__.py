@@ -5,6 +5,7 @@ import json
 import sys
 from eagleplatform_migrator.helpers import cprint
 from eagleplatform_migrator.cdn_downloader import get_videos
+from eagleplatform_migrator.youtube_uploader import youtube_upload
 
 
 def main():
@@ -29,6 +30,10 @@ def main():
     filter_id = args['filter']
 
     records_list = get_videos(site, login, token, filter_id)
+
+    youtube = youtube_upload(records_list)
+    youtube_response = json.loads(youtube)
+    cprint('warning', youtube_response['id'])
 
 
 if __name__ == '__main__':
