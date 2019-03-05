@@ -39,18 +39,18 @@ def get_authenticated_service():
 
 def initialize_upload(youtube, options):
     tags = None
-    if options.keywords:
-        tags = options.keywords.split(',')
+   # if options['keywords']:
+   #     tags = options.keywords.split(',')
 
-    body = { 'snippet': {
-        'title': options['title'],
+    body = {'snippet': {
+        'title': options['name'],
         'description': '',
         'tags': '',
         'categoryId': '22'},
         'status': {
             'pruvacyStatus': 'private'}
-        }
-    
+    }
+
     # Call the API's videos.insert method to create and upload the video.
     insert_request = youtube.videos().insert(
         part=','.join(body.keys()),
@@ -66,7 +66,8 @@ def initialize_upload(youtube, options):
         # practice, but if you're using Python older than 2.6 or if you're
         # running on App Engine, you should set the chunksize to something like
         # 1024 * 1024 (1 megabyte).
-        media_body=MediaFileUpload(options['filename'], chunksize=-1, resumable=True)
+        media_body=MediaFileUpload(
+            options['filename'], chunksize=-1, resumable=True)
     )
 
     resumable_upload(insert_request)
@@ -109,8 +110,7 @@ def resumable_upload(request):
             cprint(
                 'info', f"Sleeping {sleep_seconds} seconds and then retrying...")
 
-
-        time.sleep(sleep_seconds)
+            time.sleep(sleep_seconds)
 
 
 def youtube_upload(options):
